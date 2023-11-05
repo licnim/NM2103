@@ -79,9 +79,10 @@ beauty_esteem <- lm(high_self_esteem ~ beauty_index, data = beauty_data)
 summary(beauty_esteem)
 ```
 
-##Confounders
+## Confounders
 
-We have identified consumption of beauty content from other platforms outside of Tiktok as a possible confounder for the correlations between our IV and DVs. Our confounder hence becomes the variable of the number of other platforms used outside of Tiktok, found through mutating a new column from the data in beauty_data$platforms.
+We have identified consumption of beauty content from other platforms outside of Tiktok as a possible confounder for the correlations between our IV and DVs. Our confounder hence becomes the variable of the number of other platforms used outside of Tiktok, found through mutating a new column from the data in beauty_data\$platforms.
+
 ```{r}
 mutate(beauty_data, other_platforms = str_remove_all(beauty_data$platforms, "Tiktok/ Douyin;")) -> beauty_data
 mutate(beauty_data, other_platforms = str_remove_all(beauty_data$other_platforms, "Tiktok/ Douyin")) -> beauty_data
@@ -104,6 +105,4 @@ summary(beauty_esteem_conf)
 
 We do not repeat the test for confounders on the single linear regression model between beauty Tiktok consumption and mood because the question for that set of observations surveys for a cause and effect relationship between Tiktok consumption specifically and mood ("negative changes in your mood (e.g., increased sadness or self consciousness) *after* watching beauty TikTok video") for non-neutral answers.
 
-##Conclusions from t-tests and linear regressions: 
-
-
+## Conclusions from t-tests and linear regressions:
