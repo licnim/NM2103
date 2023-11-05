@@ -1,0 +1,109 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+---
+
+## Loading of Data
+
+```{r, message = FALSE}
+library(tidyverse)
+beauty <- read_csv("beauty.csv")
+```
+
+Filtering to only female respondents:
+
+```{r}
+beauty_data <- beauty %>% filter(gender == "Female")
+```
+
+Demographic characteristics:
+
+```{r}
+fivenum(beauty_data$age)
+unique(beauty_data$faculty)
+fivenum(beauty_data$tiktok_hours)
+beauty_data %>% mutate(beauty_index = tiktok_hours*frequency) -> beauty_data
+```
+
+## T-tests between IV and DVs
+
+First, split respondents into two groups: those who do not consume beauty content on Tiktok (ie. Watched Hours = 0 + Tiktoks related to beauty answer "not at all"), and those who do.
+
+```{r}
+beauty_false <- beauty_data %>% filter(tiktok_hours == 0 | frequency == 1)
+beauty_true <- setdiff(beauty_data, beauty_false)
+
+```
+
+Then, compare means of dependent variables.
+
+For self-esteem, our hypothesis is that the self-esteems of those who consume beauty content are lower than those who do not. t = 1.2579, p = 0.8907. Hence, the longer-term self-esteems of those who consume beauty content is not significantly lesser than those who do not.
+
+```{r}
+t.test(beauty_true$high_self_esteem, beauty_false$high_self_esteem, alternative = "less")
+```
+
+For appearance anxiety, our hypothesis is that those who consume beauty content experience more appearance anxiety than those who do not. t = 1.0299, , p-value = 0.156. Hence, the longer-term appearance anxiety of those who consume beauty content is not significantly greater than those who do not.
+
+```{r}
+t.test(beauty_true$anxiety, beauty_false$anxiety, alternative = "greater")
+```
+
+For mood, our hypothesis is that those who consume beauty content have their moods more negatively affected by such content than those who do not. t = 2.9167, p-value = 0.003428. Hence, the moods of those who consume beauty content are significantly more negatively affected than those who do not.
+
+```{r}
+t.test(beauty_true$negative_mood, beauty_false$negative_mood, alternative = "greater")
+```
+
+## Simple Linear Regression between IV and DVs
+
+Beauty Index on Mood: correlation is estimated to be 0.11257, p-value is 0.0003816, and there is a significant positive correlation.
+
+```{r}
+beauty_mood <- lm(negative_mood ~ beauty_index, data = beauty_data)
+summary(beauty_mood)
+```
+
+Beauty Index on Anxiety: correlation is estimated to be 0.04991, p-value is 0.0137, and there is a non-significant positive correlation.
+
+```{r}
+beauty_anxiety <- lm(anxiety ~ beauty_index, data = beauty_data)
+summary(beauty_anxiety)
+```
+
+Beauty Index on Self-esteem: correlation is estimated to be 0.1155, p-value is 0.592, and there is a extremely non-significant positive correlation.
+
+```{r}
+beauty_esteem <- lm(high_self_esteem ~ beauty_index, data = beauty_data)
+summary(beauty_esteem)
+```
+
+##Confounders
+
+We have identified consumption of beauty content from other platforms outside of Tiktok as a possible confounder for the correlations between our IV and DVs. Our confounder hence becomes the variable of the number of other platforms used outside of Tiktok, found through mutating a new column from the data in beauty_data$platforms.
+```{r}
+mutate(beauty_data, other_platforms = str_remove_all(beauty_data$platforms, "Tiktok/ Douyin;")) -> beauty_data
+mutate(beauty_data, other_platforms = str_remove_all(beauty_data$other_platforms, "Tiktok/ Douyin")) -> beauty_data
+mutate(beauty_data, other_platforms = str_count(beauty_data$other_platforms, ";")) -> beauty_data
+```
+
+The effect of consuming beauty Tiktok content on appearance anxiety, when controlled for consumption of content from other platforms, shows no change in terms of significance. Estimated correlation = 0.05009, p = 0.04532.
+
+```{r}
+beauty_anxiety_conf <- lm(anxiety ~ beauty_index + other_platforms, data = beauty_data)
+summary(beauty_anxiety_conf)
+```
+
+However, when examining the effect of consuming beauty Tiktok content on self-esteem, when controlled for consumption of content from other platforms, shows that while beauty Tiktok content does not have a significant effect, consumption of content from other platforms indeed has a significant effect at a p = 0.05 level.
+
+```{r}
+beauty_esteem_conf <- lm(high_self_esteem ~ beauty_index + other_platforms, data = beauty_data)
+summary(beauty_esteem_conf)
+```
+
+We do not repeat the test for confounders on the single linear regression model between beauty Tiktok consumption and mood because the question for that set of observations surveys for a cause and effect relationship between Tiktok consumption specifically and mood ("negative changes in your mood (e.g., increased sadness or self consciousness) *after* watching beauty TikTok video") for non-neutral answers.
+
+##Conclusions from t-tests and linear regressions: 
+
+

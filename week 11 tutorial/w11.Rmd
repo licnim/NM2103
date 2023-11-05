@@ -1,0 +1,73 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+paintings <- read_csv("paris-paintings (1).csv")
+```
+
+What are the columns?
+```{r}
+names(paintings)
+```
+What is the effect of painting width on price? Is it positive or negative?
+```{r}
+width_price <- lm(Width_in ~ price, data = paintings )
+
+summary(width_price)
+
+print("The effect is positive and significant.")
+```
+
+```{r}
+sunburns <- read_csv("sunburns.csv")
+names(sunburns)
+```
+What is the effect of ice cream sales on sunburns? Is it positive or negative? Is it significant? What is
+weird about this finding? What could be going on?
+
+```{r}
+icecream_sunburns <- lm(sunburns ~ icecreams, data = sunburns)
+summary(icecream_sunburns)
+
+print("The effect is estimated to be 0.0004230. positive and significant. It is weird that the number is small but significant. Different scales of both observations.")
+```
+Now what is the effect of temperature on sunburns? Is it positive or negative? Is it significant?
+```{r}
+temp_sunburns <- lm(sunburns ~ temperature, data = sunburns)
+summary(temp_sunburns)
+
+print("The effect is positive and significant at 0.22312.")
+```
+
+Next, what is the effect of temperature on ice cream sales? Positive / negative? Is it significant?
+```{r}
+temp_icecream <- lm(icecreams ~ temperature, data = sunburns)
+summary(temp_icecream)
+
+print("There is a significant and large effect of temperature on ice cream sales at 338.55.")
+```
+Finally, what is the effect of ice cream sales on sunburns after controlling for temperature? How do
+you interpret this finding?
+```{r}
+icecream_sunburns_controlled <- lm(sunburns ~ icecreams + temperature, data = sunburns)
+summary(icecream_sunburns_controlled)
+
+print("The effect is not significant after controlling. It means that ice cream sales have no significant effect on sunburns, and it's only temperature that has a significant effect.")
+```
+What story do these four regression models uncover? Does a significant effect size always mean there
+is a true effect of a variable on another variable?
+```{r}
+print("Control first then see significance!!! Significant effect does not necessarily mean true effect, where multiple variables are involved due to confounders. ")
+```
+
