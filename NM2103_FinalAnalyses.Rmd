@@ -58,25 +58,37 @@ t.test(beauty_true$negative_mood, beauty_false$negative_mood, alternative = "gre
 
 ## Simple Linear Regression between IV and DVs
 
-Beauty Index on Mood: correlation is estimated to be 0.11257, p-value is 0.0003816, and there is a significant positive correlation.
-
 ```{r}
 beauty_mood <- lm(negative_mood ~ beauty_index, data = beauty_data)
 summary(beauty_mood)
 ```
 
-Beauty Index on Anxiety: correlation is estimated to be 0.04991, p-value is 0.0137, and there is a non-significant positive correlation.
 
 ```{r}
 beauty_anxiety <- lm(anxiety ~ beauty_index, data = beauty_data)
 summary(beauty_anxiety)
 ```
 
-Beauty Index on Self-esteem: correlation is estimated to be 0.1155, p-value is 0.592, and there is a extremely non-significant positive correlation.
 
 ```{r}
 beauty_esteem <- lm(high_self_esteem ~ beauty_index, data = beauty_data)
 summary(beauty_esteem)
+```
+
+```{r}
+beauty_jealousy <- lm(jealousy ~ beauty_index, data = beauty_data)
+summary(beauty_jealousy)
+
+beauty_comparison <- lm(comparison ~ beauty_index, data = beauty_data)
+summary(beauty_comparison)
+```
+
+```{r}
+beauty_self_esteem_after <- lm(self_esteem_awareness ~ beauty_index, data = beauty_data)
+summary(beauty_self_esteem_after)
+
+beauty_anxiety_after <- lm(anxiety_after ~ beauty_index, data = beauty_data)
+summary(beauty_anxiety_after)
 ```
 
 ## Confounders
@@ -86,23 +98,80 @@ We have identified consumption of beauty content from other platforms outside of
 ```{r}
 mutate(beauty_data, other_platforms = str_remove_all(beauty_data$platforms, "Tiktok/ Douyin;")) -> beauty_data
 mutate(beauty_data, other_platforms = str_remove_all(beauty_data$other_platforms, "Tiktok/ Douyin")) -> beauty_data
-mutate(beauty_data, other_platforms = str_count(beauty_data$other_platforms, ";")) -> beauty_data
+beauty_data$other_platforms[beauty_data$other_platforms == ""] <- NA
+beauty_data$other_platforms <- trimws(beauty_data$other_platforms, "r", whitespace = ";")
+mutate(beauty_data, n_other_platforms = str_count(beauty_data$other_platforms, ";") + 1) -> beauty_data
+
 ```
 
-The effect of consuming beauty Tiktok content on appearance anxiety, when controlled for consumption of content from other platforms, shows no change in terms of significance. Estimated correlation = 0.05009, p = 0.04532.
 
 ```{r}
-beauty_anxiety_conf <- lm(anxiety ~ beauty_index + other_platforms, data = beauty_data)
+beauty_anxiety_conf <- lm(anxiety ~ beauty_index + n_other_platforms, data = beauty_data)
 summary(beauty_anxiety_conf)
 ```
 
-However, when examining the effect of consuming beauty Tiktok content on self-esteem, when controlled for consumption of content from other platforms, shows that while beauty Tiktok content does not have a significant effect, consumption of content from other platforms indeed has a significant effect at a p = 0.05 level.
-
 ```{r}
-beauty_esteem_conf <- lm(high_self_esteem ~ beauty_index + other_platforms, data = beauty_data)
+beauty_esteem_conf <- lm(high_self_esteem ~ beauty_index + n_other_platforms, data = beauty_data)
 summary(beauty_esteem_conf)
 ```
+```{r}
+#Identifying if there is R/S between n_other_platforms and beauty_index since confounders usually entail R/S between confounder, IV, DV.
+beauty_index_platforms <- lm(n_other_platforms ~ beauty_index, data = beauty_data)
+summary(beauty_index_platforms)
+
+beauty_index_platforms2 <- lm(beauty_index ~ n_other_platforms, data = beauty_data)
+summary(beauty_index_platforms2)
+```
+
 
 We do not repeat the test for confounders on the single linear regression model between beauty Tiktok consumption and mood because the question for that set of observations surveys for a cause and effect relationship between Tiktok consumption specifically and mood ("negative changes in your mood (e.g., increased sadness or self consciousness) *after* watching beauty TikTok video") for non-neutral answers.
 
-## Conclusions from t-tests and linear regressions:
+
+## Antecedent vs Post-Tiktok levels of anxiety and self-esteem
+```{r}
+beauty_index_anxiety_controlled <- lm(anxiety_after ~ beauty_index + anxiety, data = beauty_data)
+summary(beauty_index_anxiety_controlled)
+
+anxiety_anxiety_after <- lm(anxiety_after ~ anxiety, data = beauty_data)
+summary(anxiety_anxiety_after)
+
+beauty_index_selfesteem_controlled <- lm(self_esteem_awareness ~ beauty_index + high_self_esteem, data = beauty_data)
+summary(beauty_index_selfesteem_controlled)
+
+beauty_index_inadequacy_controlled <- lm(jealousy ~ beauty_index + high_self_esteem, data = beauty_data)
+summary(beauty_index_inadequacy_controlled)
+
+```
+
+## Construct validity/Agreement between questions 
+
+Mood: hypothesis: correlation between beauty index and positive mood from tiktok should be inverse of correlation between beauty index and negative mood from tiktok 
+```{r}
+beauty_positive_mood <- lm(positive_mood ~ beauty_index, data = beauty_data)
+summary(beauty_positive_mood)
+
+beauty_mood <- lm(negative_mood ~ beauty_index, data = beauty_data)
+summary(beauty_mood)
+```
+
+Self-esteem: hypothesis: correlation between beauty index effect on detrimental mood after tiktok and correlation between beauty index effect on pressured to change oneself/
+```{r}
+beauty_positive_mood <- lm(positive_mood ~ beauty_index, data = beauty_data)
+summary(beauty_positive_mood)
+```
+
+
+```{r}
+beauty_unrealistic <- lm(unrealistic ~ beauty_index, data = beauty_data)
+summary(beauty_unrealistic)
+
+beauty_unhealthy <- lm(unhealthy ~ beauty_index, data = beauty_data)
+summary(beauty_unhealthy)
+
+beauty_pressure <- lm(pressure ~ beauty_index, data = beauty_data)
+summary(beauty_pressure)
+
+unrealistic_unhealthy_anxiety_after <- lm(anxiety_after ~ unrealistic + unhealthy, data = beauty_data)
+summary(unrealistic_unhealthy_anxiety_after)
+```
+
