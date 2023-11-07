@@ -95,7 +95,7 @@ summary(beauty_anxiety_after)
 
 We have identified consumption of beauty content from other platforms outside of Tiktok as a possible confounder for the correlations between our IV and DVs. Our confounder hence becomes the variable of the number of other platforms used outside of Tiktok, found through mutating a new column from the data in beauty_data\$platforms.
 
-```{r}
+```{r tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 mutate(beauty_data, other_platforms = str_remove_all(beauty_data$platforms, "Tiktok/ Douyin;")) -> beauty_data
 mutate(beauty_data, other_platforms = str_remove_all(beauty_data$other_platforms, "Tiktok/ Douyin")) -> beauty_data
 beauty_data$other_platforms[beauty_data$other_platforms == ""] <- NA
@@ -114,7 +114,7 @@ summary(beauty_anxiety_conf)
 beauty_esteem_conf <- lm(high_self_esteem ~ beauty_index + n_other_platforms, data = beauty_data)
 summary(beauty_esteem_conf)
 ```
-```{r}
+```{r tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 #Identifying if there is R/S between n_other_platforms and beauty_index since confounders usually entail R/S between confounder, IV, DV.
 beauty_index_platforms <- lm(n_other_platforms ~ beauty_index, data = beauty_data)
 summary(beauty_index_platforms)
